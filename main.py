@@ -1,10 +1,6 @@
-from cAPI.spot import Spotify
-import json
-
-with open('config.json') as json_file:
-         data = json.load(json_file)
+import tests.test as tester
 
 
-p1 = Spotify(data["publicKey"], data["privateKey"])
+if __name__ == "__main__":
+    tester.runTests()
 
-print(p1.getAuthToken())
