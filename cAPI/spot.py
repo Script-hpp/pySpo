@@ -4,6 +4,8 @@ import cAPI.apiList as api
 import requests
 import base64
 import urllib
+import time
+import subprocess 
 
 # Text to base64
 def b64(text: str) -> str:
@@ -13,9 +15,10 @@ def b64(text: str) -> str:
 API_ENDPOINT = "https://accounts.spotify.com/api/token"
 
 class Spotify:
-  def __init__(self, clientToken, privateToken,username):
+  def __init__(self, clientToken, privateToken,refreshToken,username):
     self.clientToken = clientToken
     self.privateToken = privateToken
+    self.refreshToken = refreshToken
     self.username = username
 
   def getAuthToken(self):
@@ -23,11 +26,14 @@ class Spotify:
             'POST',
             'https://accounts.spotify.com/api/token',
             data={
-                'grant_type': 'client_credentials'
+                'grant_type': 'refresh_token',
+                'refresh_token': self.refreshToken,
+                'client_id': self.clientToken,
+                'client_secret': self.privateToken
+          
             },
-            headers={'Authorization': 'Basic ' + b64(str(self.clientToken) + ':' + str(self.privateToken))}
         ).json()
-    return r["access_token"]
+    return r['access_token']
 
   def getUsername(self):
     r = requests.get('https://api.spotify.com/v1/users/' + self.username, headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
@@ -36,6 +42,40 @@ class Spotify:
   def getFollowers(self):
     r = requests.get('https://api.spotify.com/v1/users/' + self.username, headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
     return r[api.followers]["total"]
+
+  def isImage(self):
+    r = requests.get('https://api.spotify.com/v1/users/' + self.username, headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
+    is_image = r[api.images]
+    if len(is_image) != 0:
+       return True
+
+
+  def getImage(self):
+    r = requests.get('https://api.spotify.com/v1/users/' + self.username, headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
+    if self.isImage():
+       return r[api.images][0]["url"]
+    else:
+      return False
+  
+  def getCurrentPlayingSong(self):
+    r = requests.get('https://api.spotify.com/v1/me/player/currently-playing?market=DE', headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
+    item = r["item"]
+    newItem = item["name"]
+    return newItem
+
+  def getCurrentPlayingTrackAuthor(self):
+    r = requests.get('https://api.spotify.com/v1/me/player/currently-playing?market=DE', headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
+    item = r["item"]
+    newItem = item["album"]
+    lastItem = newItem["artists"][0]["name"]
+    return lastItem
+
+
+      
+
+
+
+
 
 
     
