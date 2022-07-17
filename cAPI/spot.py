@@ -1,5 +1,6 @@
 from ssl import ALERT_DESCRIPTION_UNEXPECTED_MESSAGE
 from typing_extensions import Self
+from unicodedata import name
 import cAPI.apiList as api
 import requests
 import base64
@@ -7,6 +8,9 @@ import urllib
 import time
 import subprocess 
 
+my_list = []
+
+# phone = 2ae12c5a950bb4a132d3f3bed6384153fcbbf701
 # Text to base64
 def b64(text: str) -> str:
     text = text.encode('ascii')
@@ -69,6 +73,55 @@ class Spotify:
     newItem = item["album"]
     lastItem = newItem["artists"][0]["name"]
     return lastItem
+  
+  def getCurrentPlayingTrackID(self):
+    r = requests.get('https://api.spotify.com/v1/me/player/currently-playing?market=DE', headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
+    item = r["item"]
+    newItem = item["id"]
+    return newItem
+
+
+
+
+  
+  def getPlaybackState(self):
+      r = requests.get('https://api.spotify.com/v1/me/player', headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
+      return r
+
+  def getMusicStartinSeconds(self):
+      r = requests.get('	https://api.spotify.com/v1/audio-analysis/' + self.getCurrentPlayingTrackID(), headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
+      item = r["sections"][1]["start"]
+      lastItem = float(item) - 2.00000
+      return lastItem * 1000
+
+  
+  def StopMusic(self):
+      r = requests.put('https://api.spotify.com/v1/me/player/pause?device_id=2ae12c5a950bb4a132d3f3bed6384153fcbbf701' + self.getCurrentPlayingTrackID(), headers={'Authorization': 'Bearer ' + self.getAuthToken()})
+      return r
+  
+  def seekMusic(self):
+      r = requests.put('https://api.spotify.com/v1/me/player/seek?position_ms=' + str(self.getMusicStartinSeconds()) + '&device_id=2ae12c5a950bb4a132d3f3bed6384153fcbbf701', headers={'Authorization': 'Bearer ' + self.getAuthToken()})
+      return r
+
+    
+
+
+
+      
+
+
+    
+
+    
+
+        
+
+
+
+
+
+
+
 
 
       
