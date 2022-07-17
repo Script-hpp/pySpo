@@ -91,7 +91,8 @@ class Spotify:
   def getMusicStartinSeconds(self):
       r = requests.get('	https://api.spotify.com/v1/audio-analysis/' + self.getCurrentPlayingTrackID(), headers={'Authorization': 'Bearer ' + self.getAuthToken()}).json()
       item = r["sections"][1]["start"]
-      lastItem = float(item) - 2.00000
+      stripped = str(item).split('.', 1)[0]
+      lastItem = int(stripped) - 2
       return lastItem * 1000
 
   
